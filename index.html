@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Past Simple Quest</title>
+<style>
+:root{
+  --bg:#0f172a;--panel:#111827;--panel2:#1f2937;--text:#f8fafc;--muted:#cbd5e1;
+  --accent:#38bdf8;--green:#22c55e;--red:#ef4444;--orange:#f59e0b;--purple:#a78bfa;--border:#334155
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Segoe UI,sans-serif;background:
+radial-gradient(circle at top left,rgba(56,189,248,.18),transparent 30%),
+radial-gradient(circle at top right,rgba(167,139,250,.14),transparent 28%),var(--bg);color:var(--text);min-height:100vh}
+.wrap{max-width:1100px;margin:auto;padding:20px}
+header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+h1{margin:0;font-size:clamp(28px,4vw,44px)}
+.sub{color:var(--muted);margin:6px 0 0}
+.stats{display:flex;gap:10px;flex-wrap:wrap}
+.chip{background:rgba(17,24,39,.94);border:1px solid var(--border);padding:10px 14px;border-radius:14px;font-weight:700}
+.chip span{color:var(--accent)}
+.grid{display:grid;grid-template-columns:1fr 290px;gap:18px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:rgba(17,24,39,.94);border:1px solid var(--border);border-radius:22px;padding:22px;box-shadow:0 18px 40px rgba(0,0,0,.26)}
+.progress{height:12px;border:1px solid #243244;background:#0b1220;border-radius:99px;overflow:hidden}
+.progress>div{height:100%;background:linear-gradient(90deg,var(--accent),var(--purple));transition:.25s}
+.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:14px;margin:12px 0}
+.badge{display:inline-block;background:#172554;color:#bfdbfe;border-radius:99px;padding:6px 10px;font-weight:700}
+.question{font-size:clamp(22px,3vw,31px);line-height:1.35;margin:18px 0}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:620px){.options{grid-template-columns:1fr}}
+button{font:inherit;cursor:pointer}
+.option,.power{background:var(--panel2);color:white;border:1px solid var(--border);border-radius:16px;padding:14px;text-align:left;font-weight:700}
+.option:hover,.power:hover{border-color:var(--accent)}
+.option.correct{border-color:var(--green);background:rgba(34,197,94,.18)}
+.option.wrong{border-color:var(--red);background:rgba(239,68,68,.18)}
+.option.hidden{opacity:.12;pointer-events:none}
+.inputrow{display:flex;gap:10px;flex-wrap:wrap}
+input{flex:1;min-width:220px;background:#0b1220;color:white;border:1px solid var(--border);border-radius:14px;padding:14px 16px;font-size:18px}
+.primary{background:linear-gradient(135deg,var(--accent),#2563eb);color:white;border:0;border-radius:14px;padding:14px 18px;font-weight:800}
+.feedback{margin-top:16px;background:#0b1220;border:1px solid var(--border);border-radius:14px;padding:14px;line-height:1.45;min-height:54px}
+.feedback.good{border-color:var(--green)} .feedback.bad{border-color:var(--red)}
+.power{width:100%;margin-bottom:10px}
+.power:disabled{opacity:.35;cursor:not-allowed}
+.pdesc{font-size:12px;color:var(--muted);margin-top:4px}.count{float:right;color:var(--orange)}
+.timer{margin-top:16px;background:#0b1220;border:1px solid var(--border);border-radius:16px;padding:12px}
+.timerbar{height:10px;background:#1f2937;border-radius:99px;overflow:hidden;margin-top:8px}
+.timerbar div{height:100%;background:var(--orange)}
+.rule{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);color:var(--muted);font-size:13px;line-height:1.55}
+.screen{text-align:center;padding:30px 8px}
+.screen h2{font-size:34px;margin:0 0 10px}.screen p{color:var(--muted);max-width:700px;margin:0 auto 20px;line-height:1.55}
+.levels{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0}
+@media(max-width:700px){.levels{grid-template-columns:1fr}}
+.level{background:#1e293b;border:1px solid var(--border);border-radius:18px;padding:18px}
+.level h3{margin:0 0 8px}.level p{font-size:14px;margin:0 0 14px}
+.rulebox{background:#0b1220;border:1px solid var(--border);border-radius:18px;padding:16px;text-align:left;line-height:1.6}
+.popup{position:fixed;left:50%;top:22%;transform:translate(-50%,-50%) scale(.8);opacity:0;transition:.2s;
+background:#111827;border:2px solid var(--orange);padding:14px 20px;border-radius:18px;font-weight:900;pointer-events:none}
+.popup.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<div><h1>Past Simple Quest</h1><p class="sub">Regular & Irregular Verbs · 5–7 классы</p></div>
+<div class="stats">
+<div class="chip">⭐ Очки: <span id="score">0</span></div>
+<div class="chip">🔥 Серия: <span id="streak">0</span></div>
+<div class="chip">❤️ Жизни: <span id="lives">3</span></div>
+</div>
+</header>
+<div class="grid">
+<main class="card" id="main"></main>
+<aside class="card">
+<h3>⚡ Power-ups</h3>
+<button class="power" id="p5050" onclick="power('5050')">🎯 50/50 <span class="count" id="c5050">2</span><div class="pdesc">Убирает 2 неверных ответа</div></button>
+<button class="power" id="phint" onclick="power('hint')">💡 Hint <span class="count" id="chint">3</span><div class="pdesc">Показывает подсказку</div></button>
+<button class="power" id="pdouble" onclick="power('double')">⚔️ x2 <span class="count" id="cdouble">2</span><div class="pdesc">Удваивает очки за следующий верный ответ</div></button>
+<button class="power" id="pfreeze" onclick="power('freeze')">❄️ Freeze <span class="count" id="cfreeze">2</span><div class="pdesc">Стоп таймер на 10 секунд</div></button>
+<button class="power" id="pshield" onclick="power('shield')">🛡️ Shield <span class="count" id="cshield">1</span><div class="pdesc">Одна ошибка не отнимает жизнь</div></button>
+<div class="timer" id="timerBox">⏳ Время: <b id="time">30</b> сек.<div class="timerbar"><div id="tbar"></div></div></div>
+<div class="rule"><b>Памятка</b><br>✅ V2 / V-ed<br>❌ didn't + V1<br>❓ Did + subject + V1?</div>
+</aside>
+</div>
+</div>
+<div class="popup" id="popup"></div>
+
+<script>
+const bank=[
+{t:"mc",q:"Yesterday I ___ football after school.",o:["played","play","plays","playing"],a:"played",h:"play — правильный глагол."},
+{t:"mc",q:"We ___ to the park last Sunday.",o:["went","goed","go","gone"],a:"went",h:"go — неправильный глагол."},
+{t:"mc",q:"My sister ___ TV yesterday evening.",o:["watched","watch","watches","watching"],a:"watched",h:"Добавь -ed."},
+{t:"in",q:"Напиши Past Simple от <b>see</b>.",a:"saw",h:"Первая буква s."},
+{t:"in",q:"Напиши Past Simple от <b>buy</b>.",a:"bought",h:"Первая буква b."},
+{t:"mc",q:"Tom ___ his room yesterday.",o:["cleaned","clean","cleans","cleaning"],a:"cleaned",h:"Yesterday → Past Simple."},
+{t:"mc",q:"She ___ a new book last week.",o:["bought","buyed","buys","buy"],a:"bought",h:"buy — irregular verb."},
+{t:"mc",q:"I ___ my homework yesterday.",o:["did","do","done","does"],a:"did",h:"do → did"},
+{t:"mc",q:"They ___ pizza for dinner.",o:["ate","eated","eat","eats"],a:"ate",h:"eat — irregular verb."},
+{t:"in",q:"Past Simple: <b>write</b> →",a:"wrote",h:"Первая буква w."},
+{t:"mc",q:"Choose the correct negative sentence.",o:["I didn't play football.","I didn't played football.","I not played football.","I don't played football."],a:"I didn't play football.",h:"После didn't используем V1."},
+{t:"mc",q:"Choose the correct question.",o:["Did she go to school?","Did she went to school?","Does she went to school?","She did go to school?"],a:"Did she go to school?",h:"Did + subject + V1?"},
+{t:"in",q:"Переведи: <b>Я не ходил в парк вчера.</b>",a:"I didn't go to the park yesterday.",alt:["I did not go to the park yesterday."],h:"didn't + go"},
+{t:"in",q:"Переведи: <b>Ты видел Анну вчера?</b>",a:"Did you see Anna yesterday?",h:"Начни с Did."},
+{t:"mc",q:"She ___ not ___ TV yesterday.",o:["did / watch","did / watched","does / watch","was / watch"],a:"did / watch",h:"did + not + V1"},
+{t:"mc",q:"___ Tom ___ his mum yesterday?",o:["Did / help","Did / helped","Does / help","Was / help"],a:"Did / help",h:"Вопрос начинается с Did."},
+{t:"mc",q:"Which verb is irregular?",o:["go","play","visit","clean"],a:"go",h:"У irregular verb нет обычного -ed."},
+{t:"mc",q:"Which verb is regular?",o:["watch","see","take","come"],a:"watch",h:"Regular verbs обычно получают -ed."},
+{t:"in",q:"Past Simple: <b>take</b> →",a:"took",h:"Первая буква t."},
+{t:"in",q:"Past Simple: <b>come</b> →",a:"came",h:"Первая буква c."},
+{t:"in",q:"Past Simple: <b>make</b> →",a:"made",h:"Первая буква m."},
+{t:"in",q:"Past Simple: <b>have</b> →",a:"had",h:"Первая буква h."},
+{t:"in",q:"Past Simple: <b>give</b> →",a:"gave",h:"Первая буква g."},
+{t:"in",q:"Past Simple: <b>study</b> →",a:"studied",h:"y → i + ed"},
+{t:"in",q:"Past Simple: <b>stop</b> →",a:"stopped",h:"Последняя согласная удваивается."},
+{t:"mc",q:"I usually ___ to school, but yesterday I ___ by bus.",o:["walk / went","walked / go","walk / go","walked / went"],a:"walk / went",h:"usually → Present; yesterday → Past."},
+{t:"mc",q:"Kate usually ___ TV, but last night she ___ a film.",o:["watches / watched","watched / watches","watch / watched","watches / watch"],a:"watches / watched",h:"last night → Past Simple."},
+{t:"in",q:"Переведи: <b>Вчера мы смотрели фильм.</b>",a:"We watched a film yesterday.",alt:["Yesterday we watched a film."],h:"watch → watched"},
+{t:"in",q:"Переведи: <b>Он купил новую книгу.</b>",a:"He bought a new book.",h:"buy → bought"},
+{t:"in",q:"Переведи: <b>Они пришли домой поздно.</b>",a:"They came home late.",h:"come → came"},
+{t:"in",q:"Переведи: <b>Мама приготовила ужин.</b>",a:"Mum cooked dinner.",alt:["Mom cooked dinner."],h:"cook → cooked"},
+{t:"in",q:"Переведи: <b>Мы не видели Тома.</b>",a:"We didn't see Tom.",alt:["We did not see Tom."],h:"После didn't — see."},
+{t:"mc",q:"Find the mistake: <b>Did you went to the park?</b>",o:["went → go","Did → Do","you → your","park → parks"],a:"went → go",h:"После Did нужен V1."},
+{t:"mc",q:"Find the mistake: <b>She buyed a dress.</b>",o:["buyed → bought","She → Her","a → the","dress → dresses"],a:"buyed → bought",h:"buy — irregular."},
+{t:"mc",q:"Find the mistake: <b>They didn't saw him.</b>",o:["saw → see","didn't → don't","They → Them","him → he"],a:"saw → see",h:"После didn't нужен V1."}
+];
+
+let s={qs:[],i:0,score:0,streak:0,lives:3,level:"medium",timer:null,frozen:false,double:false,shield:false,p:{'5050':2,hint:3,double:2,freeze:2,shield:1}};
+const $=id=>document.getElementById(id);
+const shuffle=a=>[...a].sort(()=>Math.random()-.5);
+function norm(x){return x.trim().replace(/[’‘]/g,"'").replace(/\s+/g," ").replace(/[.!]+$/,"").toLowerCase()}
+function update(){score.textContent=s.score;streak.textContent=s.streak;lives.textContent=s.lives;for(const k of ['5050','hint','double','freeze','shield']){$('c'+k).textContent=s.p[k];$('p'+k).disabled=s.p[k]<=0}}
+function startScreen(){timerBox.style.display="none";main.innerHTML=`<div class="screen"><h2>🎮 Готов к Past Simple Quest?</h2><p>Выбери уровень. Вопросы смешиваются при каждом запуске.</p><div class="levels"><div class="level"><h3>🟢 Rookie</h3><p>5 класс · 15 вопросов · 40 сек.</p><button class="primary" onclick="start('easy')">Начать</button></div><div class="level"><h3>🔵 Pro</h3><p>6 класс · 20 вопросов · 30 сек.</p><button class="primary" onclick="start('medium')">Начать</button></div><div class="level"><h3>🟣 Legend</h3><p>7 класс · 25 вопросов · 22 сек.</p><button class="primary" onclick="start('hard')">Начать</button></div></div><div class="rulebox"><b>⚔️ Боевая памятка</b><br>Regular: play → played<br>Irregular: go → went<br>Negative: didn't + V1<br>Question: Did + subject + V1?</div></div>`;update()}
+function start(l){s.level=l;let n=l==='easy'?15:l==='medium'?20:25;s.qs=shuffle(bank).slice(0,n);s.i=0;s.score=0;s.streak=0;s.lives=3;s.p={'5050':2,hint:3,double:2,freeze:2,shield:1};timerBox.style.display="block";update();render()}
+function render(){clearInterval(s.timer);if(s.i>=s.qs.length||s.lives<=0){finish();return}let q=s.qs[s.i],pct=Math.round(s.i/s.qs.length*100);main.innerHTML=`<div style="display:flex;justify-content:space-between;color:var(--muted);font-size:14px;margin-bottom:8px"><span>Вопрос ${s.i+1} из ${s.qs.length}</span><span>${pct}%</span></div><div class="progress"><div style="width:${pct}%"></div></div><div class="meta"><span class="badge">${q.t==='mc'?'Выбери ответ':'Введи ответ'}</span><span>${s.double?'⚔️ x2 ':''}${s.shield?'🛡️':''}</span></div><div class="question">${q.q}</div>${q.t==='mc'?`<div class="options">${shuffle(q.o).map(x=>`<button class="option" data-v="${x.replaceAll('"','&quot;')}" onclick="mc(this)">${x}</button>`).join('')}</div>`:`<div class="inputrow"><input id="inp" placeholder="Type your answer..." onkeydown="if(event.key==='Enter')inputCheck()"><button class="primary" onclick="inputCheck()">Проверить</button></div>`}<div class="feedback" id="fb">💬 Ответь на вопрос. Серия правильных ответов даёт бонусы.</div>`;clock();if(q.t==='in')setTimeout(()=>inp.focus(),80)}
+function mc(b){let q=s.qs[s.i],bs=[...document.querySelectorAll('.option')];bs.forEach(x=>x.disabled=true);if(b.dataset.v===q.a){b.classList.add('correct');good(q.a)}else{b.classList.add('wrong');let r=bs.find(x=>x.dataset.v===q.a);if(r)r.classList.add('correct');bad(q.a)}}
+function inputCheck(){let q=s.qs[s.i];if(inp.disabled)return;let ok=[q.a,...(q.alt||[])].map(norm).includes(norm(inp.value));inp.disabled=true;ok?good(q.a):bad(q.a)}
+function good(a){clearInterval(s.timer);let pts=100+Math.min(s.streak*10,100);if(s.double){pts*=2;s.double=false}s.score+=pts;s.streak++;if(s.streak%5===0){s.score+=100;pop(`🔥 Серия ${s.streak}! +100`)}fb.className='feedback good';fb.innerHTML=`✅ Верно! <b>+${pts}</b> очков.<br>Ответ: <b>${a}</b><br><br><button class="primary" onclick="next()">Дальше →</button>`;update()}
+function bad(a){clearInterval(s.timer);if(s.shield){s.shield=false;pop('🛡️ Щит спас жизнь!')}else s.lives--;s.streak=0;fb.className='feedback bad';fb.innerHTML=`❌ Правильный ответ: <b>${a}</b>.<br><br><button class="primary" onclick="next()">Дальше →</button>`;update()}
+function next(){s.i++;render()}
+function clock(){clearInterval(s.timer);s.frozen=false;let total=s.level==='easy'?40:s.level==='medium'?30:22,t=total;time.textContent=t;tbar.style.width='100%';s.timer=setInterval(()=>{if(s.frozen)return;t--;time.textContent=t;tbar.style.width=(t/total*100)+'%';if(t<=0){clearInterval(s.timer);bad(s.qs[s.i].a)}},1000)}
+function power(k){if(s.p[k]<=0)return;let q=s.qs[s.i];if(k==='5050'){if(q.t!=='mc'){pop('🎯 50/50 только для вариантов ответа');return}let w=shuffle([...document.querySelectorAll('.option')].filter(b=>b.dataset.v!==q.a));w.slice(0,2).forEach(b=>b.classList.add('hidden'))}if(k==='hint')fb.innerHTML='💡 '+q.h;if(k==='double'){s.double=true;pop('⚔️ x2 активирован')}if(k==='freeze'){s.frozen=true;pop('❄️ Таймер заморожен');setTimeout(()=>s.frozen=false,10000)}if(k==='shield'){s.shield=true;pop('🛡️ Щит активирован')}s.p[k]--;update()}
+function pop(t){popup.textContent=t;popup.classList.add('show');setTimeout(()=>popup.classList.remove('show'),1500)}
+function finish(){clearInterval(s.timer);timerBox.style.display='none';let rank=s.score>2600?'Past Simple Legend':s.score>1800?'Verb Master':s.score>1000?'Grammar Fighter':'Rookie';main.innerHTML=`<div class="screen"><h2>🏆 Квест завершён!</h2><p>Твой ранг: <b>${rank}</b></p><div class="stats" style="justify-content:center;margin:22px 0"><div class="chip">⭐ ${s.score} очков</div><div class="chip">❤️ ${s.lives} жизни</div></div><button class="primary" onclick="startScreen()">Играть снова</button></div>`}
+startScreen();
+</script>
+</body>
+</html>
